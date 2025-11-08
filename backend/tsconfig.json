@@ -5,7 +5,6 @@
     "lib": ["ES2022"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": "./",
 
     /* ✅ Required for NestJS decorators */
     "experimentalDecorators": true,
@@ -13,6 +12,7 @@
     "useDefineForClassFields": false,   // <--- IMPORTANT for TS 5+
 
     /* ✅ Module resolution & path aliases */
+    "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
     },

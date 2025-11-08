@@ -16,7 +16,7 @@ interface AuthStore {
   clearError: () => void
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://localhost:3000"
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,

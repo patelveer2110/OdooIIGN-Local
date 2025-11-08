@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 
 export function DashboardTeamPage() {
   const user = useAuthStore((s: any) => s.user)
-  const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: async () => (await projectsApi.getAll()).data })
+  const { data: _projects = [] } = useQuery({ queryKey: ["projects"], queryFn: async () => (await projectsApi.getAll()).data })
   const { data: timesheets = [] } = useQuery({ queryKey: ["timesheets", user?.id], queryFn: async () => (await timesheetsApi.getAll({ user: user?.id || "" })).data, enabled: !!user?.id })
   const { data: expenses = [] } = useQuery({ queryKey: ["expenses", user?.id], queryFn: async () => (await expensesApi.getAll({ user: user?.id || "" as any })).data, enabled: !!user?.id })
 

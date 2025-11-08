@@ -12,4 +12,5 @@ export const invoicesApi = {
       project_id: projectId,
       timesheet_ids: timesheetIds,
     }),
+  createFromSo: (payload: any) => client.post('/api/v1/finance/invoices/from-so', payload),
 }

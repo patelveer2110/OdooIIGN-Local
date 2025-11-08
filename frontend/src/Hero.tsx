@@ -1,4 +1,4 @@
-import React from 'react';
+// Hero component
 import { useNavigate } from 'react-router-dom';
 import { FileText, Zap, DollarSign, Mail, Twitter, Linkedin, Github, ArrowRight } from 'lucide-react';
 

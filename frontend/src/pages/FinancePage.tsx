@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from "@tanstack/react-query"
 import { invoicesApi } from "@/api/invoices"
 import { projectsApi } from "@/api/projects"
@@ -19,9 +20,15 @@ export function FinancePage() {
 
   const [creating, setCreating] = useState(false)
   const [soProjectId, setSoProjectId] = useState<string | undefined>(undefined)
-  const [soUnitPrice, setSoUnitPrice] = useState<number | undefined>(undefined)
-  const [soQuantity, setSoQuantity] = useState<number>(1)
-  const [soDescription, setSoDescription] = useState<string>("")
+  const [_soUnitPrice, _setSoUnitPrice] = useState<number | undefined>(undefined)
+  const [_soQuantity, _setSoQuantity] = useState<number>(1)
+  const [_soDescription, _setSoDescription] = useState<string>("")
+  // multi-line support
+  const [soLines, setSoLines] = useState<Array<any>>([{ productName: '', quantity: 1, unitPrice: undefined }])
+
+  const addSoLine = () => setSoLines(s => [...s, { productName: '', quantity: 1, unitPrice: undefined }])
+  const removeSoLine = (i: number) => setSoLines(s => s.filter((_, idx) => idx !== i))
+  const updateSoLine = (i: number, k: string, v: any) => setSoLines(s => s.map((ln, idx) => idx === i ? { ...ln, [k]: v } : ln))
 
   const selectedProject: Project | undefined = projects.find((p: any) => p.id === soProjectId)
 
@@ -40,6 +47,11 @@ export function FinancePage() {
     queryKey: ["sales-orders", filters.project],
     queryFn: async () => (await salesOrdersApi.getAll(filters.project)).data,
   })
+  
+  const navigate = useNavigate()
+  const goToInvoiceFromSo = (soId: string) => {
+    navigate(`/invoice/${soId}`)
+  }
 
   // Estimate: prefer project budget, else estimate from tasks (sum hours * default rate 50)
   const estimatedAmount = useMemo(() => {
@@ -50,10 +62,7 @@ export function FinancePage() {
     return Math.round(totalHours * rate)
   }, [selectedProject, projectTasks])
 
-  const totalLineAmount = useMemo(() => {
-    const price = soUnitPrice ?? estimatedAmount
-    return Math.round((price || 0) * (soQuantity || 1))
-  }, [soUnitPrice, soQuantity, estimatedAmount])
+  // removed unused total line amount helper
 
   const filtered = invoices.filter((inv) => (filters.status ? inv.status === filters.status : true))
 
@@ -107,27 +116,26 @@ export function FinancePage() {
                 </option>
               ))}
             </select>
-
-            <input
-              className="border px-2 py-2"
-              placeholder="Line description"
-              value={soDescription}
-              onChange={(e) => setSoDescription(e.target.value)}
-            />
-
-            <input
-              type="number"
-              className="border px-2 py-2"
-              placeholder="Unit price"
-              value={soUnitPrice ?? ''}
-              onChange={(e) => setSoUnitPrice(e.target.value ? Number(e.target.value) : undefined)}
-            />
+            <div className="md:col-span-2">
+              <div className="space-y-2">
+                {soLines.map((ln, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <input placeholder="Product name" value={ln.productName} onChange={(e) => updateSoLine(idx, 'productName', e.target.value)} className="flex-1 border px-2 py-2" />
+                    <input placeholder="Qty" type="number" value={ln.quantity} onChange={(e) => updateSoLine(idx, 'quantity', Number(e.target.value))} className="w-20 border px-2 py-2" />
+                    <input placeholder="Price" type="number" value={ln.unitPrice ?? ''} onChange={(e) => updateSoLine(idx, 'unitPrice', e.target.value ? Number(e.target.value) : undefined)} className="w-32 border px-2 py-2" />
+                    <button className="px-2" onClick={() => removeSoLine(idx)}>Remove</button>
+                  </div>
+                ))}
+                <div>
+                  <button className="px-3 py-1 border rounded" onClick={addSoLine}>Add Line</button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center mb-3">
-            <input placeholder="Quantity" type="number" className="border px-2 py-2" value={soQuantity} onChange={(e) => setSoQuantity(Number(e.target.value))} />
             <div className="text-sm text-gray-600">Estimated amount: ${estimatedAmount}</div>
-            <div className="text-right font-semibold">Line total: ${totalLineAmount}</div>
+            <div className="text-right font-semibold">Order total: ${soLines.reduce((s, ln) => s + ((ln.quantity || 0) * (ln.unitPrice || 0)), 0)}</div>
           </div>
 
           <div className="flex gap-2">
@@ -137,24 +145,17 @@ export function FinancePage() {
                 if (!soProjectId) return alert('Please select a project')
                 const proj = selectedProject as Project
                 const soNumber = `SO-${Date.now()}`
+                  const computedLines = soLines.map(ln => ({ productName: ln.productName || ln.description || `Line`, quantity: Number(ln.quantity || 0), unitPrice: Number(ln.unitPrice || 0) }))
+                  const orderTotal = computedLines.reduce((s, ln) => s + (ln.quantity * ln.unitPrice), 0)
                   const payload = {
-                  number: soNumber,
-                  projectId: soProjectId,
-                  customerId: (proj as any).customerId,
-                  customerName: proj.name,
-                  currency: proj.currency || 'USD',
-                  totalAmount: totalLineAmount,
-                  lines: {
-                    create: [
-                      {
-                        description: soDescription || `Project: ${proj.name}`,
-                        quantity: soQuantity,
-                        unitPrice: soUnitPrice ?? estimatedAmount,
-                        amount: totalLineAmount,
-                      },
-                    ],
-                  },
-                }
+                    number: soNumber,
+                    projectId: soProjectId,
+                    customerId: (proj as any).customerId,
+                    customerName: proj.name,
+                    currency: proj.currency || 'USD',
+                    totalAmount: orderTotal,
+                    lines: computedLines,
+                  }
 
                 try {
                   await salesOrdersApi.create(payload)
@@ -167,9 +168,9 @@ export function FinancePage() {
                   }
                   // reset
                   setSoProjectId(undefined)
-                  setSoDescription('')
-                  setSoQuantity(1)
-                  setSoUnitPrice(undefined)
+                  _setSoDescription('')
+                  _setSoQuantity(1)
+                  _setSoUnitPrice(undefined)
                   setCreating(false)
                 } catch (err: any) {
                   alert('Failed to create SO: ' + (err?.response?.data?.message || err.message))
@@ -190,18 +191,21 @@ export function FinancePage() {
           {!salesOrdersLoading &&
             (salesOrders as any[]).map((so) => (
               <Card key={so.id}>
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center justify-between">
-                    <span>{so.number}</span>
-                    <span className="text-xs px-2 py-1 rounded bg-gray-100">{so.status}</span>
-                  </CardTitle>
-                </CardHeader>
+                  <CardHeader>
+                    <CardTitle className="text-sm flex items-center justify-between">
+                      <span>{so.number}</span>
+                      <span className="text-xs px-2 py-1 rounded bg-gray-100">{so.status}</span>
+                    </CardTitle>
+                  </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">{so.projectId ? `Project: ${so.projectId}` : "No project"}</div>
+                    <div className="text-sm text-gray-600">{so.project ? `Project: ${so.project.name || so.projectId}` : (so.projectId ? `Project: ${so.projectId}` : "No project")}</div>
                     <div className="text-lg font-semibold">${so.totalAmount}</div>
                   </div>
                   {so.createdAt && <div className="text-xs text-gray-500 mt-2">{new Date(so.createdAt).toLocaleDateString()}</div>}
+                  <div className="mt-3 flex gap-2">
+                    <button className="px-3 py-1 bg-indigo-600 text-white rounded" onClick={() => goToInvoiceFromSo(so.id)}>Create Invoice</button>
+                  </div>
                 </CardContent>
               </Card>
             ))}

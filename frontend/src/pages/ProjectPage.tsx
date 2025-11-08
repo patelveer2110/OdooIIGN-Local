@@ -10,8 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TaskBoard } from "@/components/TaskBoard"
 import { TimesheetList } from "@/components/TimesheetList"
+
 import { FinancePanel } from "@/components/FinancePanel"
 import { Button } from "@/components/ui/button"
+
+// FinancePanel intentionally not used in ProjectPage tabs
+import { PurchaseOrdersPanel } from "@/components/PurchaseOrdersPanel"
+import { VendorBillsPanel } from "@/components/VendorBillsPanel"
+import { SalesOrderPanel } from "@/components/SalesOrderPanel"
+
 import { ArrowLeft } from "lucide-react"
 
 export function ProjectPage() {
@@ -149,9 +156,9 @@ export function ProjectPage() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="timesheets">Timesheets</TabsTrigger>
+          <TabsTrigger value="sales-orders">Sales Orders</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          <TabsTrigger value="finance">Finance</TabsTrigger>
-          <TabsTrigger value="docs">Documents</TabsTrigger>
+          <TabsTrigger value="docs">Docs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tasks" className="p-4 space-y-4">
@@ -232,22 +239,26 @@ export function ProjectPage() {
           <TimesheetList projectId={projectId!} />
         </TabsContent>
 
-        {/* --- EXPENSES TAB --- */}
-        <TabsContent value="expenses" className="p-4">
-          <div className="text-center text-gray-500 py-8">
-            Expenses coming soon
-          </div>
+        <TabsContent value="sales-orders" className="p-4">
+          <SalesOrderPanel projectId={projectId!} />
         </TabsContent>
 
-        {/* --- FINANCE TAB --- */}
-        <TabsContent value="finance" className="p-4">
-          <FinancePanel projectId={projectId!} />
+        <TabsContent value="expenses" className="p-4">
+          <div className="space-y-4">
+            <h4 className="font-semibold">Purchase Orders</h4>
+            <div className="p-2 bg-gray-50 rounded">
+              <PurchaseOrdersPanel projectId={projectId!} />
+            </div>
+          </div>
         </TabsContent>
 
         {/* --- DOCUMENTS TAB --- */}
         <TabsContent value="docs" className="p-4">
-          <div className="text-center text-gray-500 py-8">
-            Documents coming soon
+          <div className="space-y-4">
+            <h4 className="font-semibold">Vendor Bills</h4>
+            <div className="p-2 bg-gray-50 rounded">
+              <VendorBillsPanel projectId={projectId!} />
+            </div>
           </div>
         </TabsContent>
       </Tabs>

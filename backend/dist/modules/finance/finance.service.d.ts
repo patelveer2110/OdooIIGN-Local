@@ -38,6 +38,15 @@ export declare class FinanceService {
             billableFlag: boolean;
             projectType: import(".prisma/client").$Enums.ProjectType;
         } | null;
+        lines: {
+            id: string;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+            soId: string;
+            productId: string | null;
+        }[];
     } & {
         number: string;
         id: string;
@@ -50,7 +59,17 @@ export declare class FinanceService {
         customerId: string | null;
         customerName: string | null;
     })[]>;
-    createSalesOrder(data: any): Promise<{
+    createSalesOrder(data: any): Promise<({
+        lines: {
+            id: string;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+            soId: string;
+            productId: string | null;
+        }[];
+    } & {
         number: string;
         id: string;
         status: import(".prisma/client").$Enums.DocumentStatus;
@@ -61,6 +80,284 @@ export declare class FinanceService {
         currency: string;
         customerId: string | null;
         customerName: string | null;
+    }) | null>;
+    getSalesOrderById(id: string): Promise<({
+        project: {
+            id: string;
+            status: import(".prisma/client").$Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: import(".prisma/client").$Enums.ProjectType;
+        } | null;
+        lines: {
+            id: string;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+            soId: string;
+            productId: string | null;
+        }[];
+    } & {
+        number: string;
+        id: string;
+        status: import(".prisma/client").$Enums.DocumentStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        projectId: string | null;
+        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        customerId: string | null;
+        customerName: string | null;
+    }) | null>;
+    getPurchaseOrders(filters?: any): Promise<({
+        project: {
+            id: string;
+            status: import(".prisma/client").$Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: import(".prisma/client").$Enums.ProjectType;
+        } | null;
+        lines: {
+            id: string;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+            productId: string | null;
+            poId: string;
+        }[];
+    } & {
+        number: string;
+        id: string;
+        status: import(".prisma/client").$Enums.DocumentStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        projectId: string | null;
+        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        vendorId: string | null;
+        vendorName: string | null;
+    })[]>;
+    getPurchaseOrderById(id: string): Promise<({
+        project: {
+            id: string;
+            status: import(".prisma/client").$Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: import(".prisma/client").$Enums.ProjectType;
+        } | null;
+        lines: {
+            id: string;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+            productId: string | null;
+            poId: string;
+        }[];
+    } & {
+        number: string;
+        id: string;
+        status: import(".prisma/client").$Enums.DocumentStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        projectId: string | null;
+        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        vendorId: string | null;
+        vendorName: string | null;
+    }) | null>;
+    createPurchaseOrder(data: any): Promise<({
+        lines: {
+            id: string;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+            productId: string | null;
+            poId: string;
+        }[];
+    } & {
+        number: string;
+        id: string;
+        status: import(".prisma/client").$Enums.DocumentStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        projectId: string | null;
+        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        vendorId: string | null;
+        vendorName: string | null;
+    }) | null>;
+    getVendorBills(filters?: any): Promise<({
+        project: {
+            id: string;
+            status: import(".prisma/client").$Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: import(".prisma/client").$Enums.ProjectType;
+        } | null;
+        billLines: {
+            id: string;
+            createdAt: Date;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            billId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+        }[];
+    } & {
+        number: string;
+        id: string;
+        status: import(".prisma/client").$Enums.DocumentStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        projectId: string | null;
+        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        dueDate: Date | null;
+        notes: string | null;
+        vendorId: string | null;
+        vendorName: string | null;
+        sourcePo: string | null;
+    })[]>;
+    getVendorBillById(id: string): Promise<({
+        project: {
+            id: string;
+            status: import(".prisma/client").$Enums.ProjectStatus;
+            defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
+            createdAt: Date;
+            updatedAt: Date;
+            name: string;
+            description: string | null;
+            currency: string;
+            code: string;
+            customerId: string | null;
+            projectManagerId: string;
+            startDate: Date;
+            endDate: Date | null;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            billableFlag: boolean;
+            projectType: import(".prisma/client").$Enums.ProjectType;
+        } | null;
+        billLines: {
+            id: string;
+            createdAt: Date;
+            description: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            billId: string;
+            quantity: import("@prisma/client/runtime/library").Decimal;
+            unitPrice: import("@prisma/client/runtime/library").Decimal;
+        }[];
+    } & {
+        number: string;
+        id: string;
+        status: import(".prisma/client").$Enums.DocumentStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        projectId: string | null;
+        totalAmount: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        dueDate: Date | null;
+        notes: string | null;
+        vendorId: string | null;
+        vendorName: string | null;
+        sourcePo: string | null;
+    }) | null>;
+    createVendorBillFromPo(poId: string, body: any): Promise<{
+        vendorBill: {
+            number: string;
+            id: string;
+            status: import(".prisma/client").$Enums.DocumentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            projectId: string | null;
+            totalAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            dueDate: Date | null;
+            notes: string | null;
+            vendorId: string | null;
+            vendorName: string | null;
+            sourcePo: string | null;
+        };
+        billLines: any[];
+    }>;
+    createInvoiceFromSalesOrder(soId: string): Promise<{
+        invoice: {
+            number: string;
+            id: string;
+            status: import(".prisma/client").$Enums.DocumentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            projectId: string | null;
+            sourceSoId: string | null;
+            totalAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            dueDate: Date | null;
+            notes: string | null;
+        };
+        invoiceLines: any[];
+    }>;
+    createInvoiceFromSo(payload: any): Promise<{
+        invoice: {
+            number: string;
+            id: string;
+            status: import(".prisma/client").$Enums.DocumentStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            projectId: string | null;
+            sourceSoId: string | null;
+            totalAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            dueDate: Date | null;
+            notes: string | null;
+        };
+        invoiceLines: any[];
     }>;
     getInvoices(projectId?: string): Promise<({
         project: {

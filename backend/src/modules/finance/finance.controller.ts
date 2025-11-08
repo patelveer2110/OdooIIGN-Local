@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from "@nestjs/common"
+import { Controller, Get, Post, Body, UseGuards, Param } from "@nestjs/common"
 import { ApiTags, ApiBearerAuth, ApiBody } from "@nestjs/swagger"
 import { JwtAuthGuard } from "@/common/guards/jwt.guard"
 import { RbacGuard } from "@/common/guards/rbac.guard"
@@ -14,14 +14,62 @@ export class FinanceController {
 
   @Get("sales-orders")
   async getSalesOrders(query: any) {
-    return this.financeService.getSalesOrders()
+    return this.financeService.getSalesOrders(query)
   }
 
   @Post('sales-orders')
   @UseGuards(RbacGuard)
-  @Roles('ADMIN', 'FINANCE')
+  @Roles('ADMIN', 'FINANCE', 'PROJECT_MANAGER')
   async createSalesOrder(@Body() body: any) {
     return this.financeService.createSalesOrder(body);
+  }
+
+  @Post('sales-orders/:id/create-invoice')
+  @UseGuards(RbacGuard)
+  @Roles('ADMIN', 'FINANCE', 'PROJECT_MANAGER')
+  async createInvoiceFromSalesOrder(@Param('id') id: string) {
+    return this.financeService.createInvoiceFromSalesOrder(id)
+  }
+
+  @Get('sales-orders/:id')
+  async getSalesOrder(@Param('id') id: string) {
+    return this.financeService.getSalesOrderById(id)
+  }
+
+  // Purchase Orders
+  @Get('purchase-orders')
+  async getPurchaseOrders(query: any) {
+    return this.financeService.getPurchaseOrders(query)
+  }
+
+  @Get('purchase-orders/:id')
+  async getPurchaseOrder(@Param('id') id: string) {
+    return this.financeService.getPurchaseOrderById(id)
+  }
+
+  @Post('purchase-orders')
+  @UseGuards(RbacGuard)
+  @Roles('ADMIN', 'FINANCE', 'PROJECT_MANAGER')
+  async createPurchaseOrder(@Body() body: any) {
+    return this.financeService.createPurchaseOrder(body)
+  }
+
+  // Vendor Bills
+  @Get('vendor-bills')
+  async getVendorBills(query: any) {
+    return this.financeService.getVendorBills(query)
+  }
+
+  @Get('vendor-bills/:id')
+  async getVendorBill(@Param('id') id: string) {
+    return this.financeService.getVendorBillById(id)
+  }
+
+  @Post('vendor-bills/from-po/:poId')
+  @UseGuards(RbacGuard)
+  @Roles('ADMIN', 'FINANCE', 'PROJECT_MANAGER')
+  async createVendorBillFromPo(@Param('poId') poId: string, @Body() body: any) {
+    return this.financeService.createVendorBillFromPo(poId, body)
   }
 
   @Get("invoices")
@@ -46,5 +94,12 @@ export class FinanceController {
     @Body() body: { project_id: string; timesheet_ids: string[] },
   ) {
     return this.financeService.createInvoiceFromTimesheets(body.project_id, body.timesheet_ids);
+  }
+
+  @Post('invoices/from-so')
+  @UseGuards(RbacGuard)
+  @Roles('ADMIN', 'FINANCE', 'PROJECT_MANAGER')
+  async createInvoiceFromSo(@Body() body: any) {
+    return this.financeService.createInvoiceFromSo(body)
   }
 }

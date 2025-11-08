@@ -14,6 +14,10 @@ import DashboardTeamPage from "./pages/DashboardTeamPage"
 import { ProjectPage } from "./pages/ProjectPage"
 import { TimesheetsPage } from "./pages/TimesheetsPage"
 import { FinancePage } from "./pages/FinancePage"
+import InvoiceFromSoPage from "./pages/InvoiceFromSoPage"
+import InvoiceViewPage from "./pages/InvoiceViewPage"
+import VendorBillFromPoPage from "./pages/VendorBillFromPoPage"
+import VendorBillViewPage from "./pages/VendorBillViewPage"
 import { ExpensesPage } from "./pages/ExpensesPage"
 import { AnalyticsPage } from "./pages/AnalyticsPage"
 import { ProfilePage } from "./pages/ProfilePage"
@@ -90,6 +94,38 @@ export function App() {
             element={
               <ProtectedRoute>
                 <FinancePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invoice/:soId"
+            element={
+              <ProtectedRoute>
+                <InvoiceFromSoPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invoice/view/:invoiceId"
+            element={
+              <ProtectedRoute>
+                <InvoiceViewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor-bill/:poId"
+            element={
+              <ProtectedRoute>
+                <VendorBillFromPoPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendor-bill/view/:invoiceId"
+            element={
+              <ProtectedRoute>
+                <VendorBillViewPage />
               </ProtectedRoute>
             }
           />
