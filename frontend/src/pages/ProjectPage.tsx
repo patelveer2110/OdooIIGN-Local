@@ -182,7 +182,7 @@ export function ProjectPage() {
       <Tabs defaultValue="tasks" className="bg-white rounded-lg border">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="timesheets">Timesheets</TabsTrigger>
+          {/* <TabsTrigger value="timesheets">Timesheets</TabsTrigger> */}
           <TabsTrigger value="sales-orders">Sales Orders</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
           <TabsTrigger value="docs">Docs</TabsTrigger>

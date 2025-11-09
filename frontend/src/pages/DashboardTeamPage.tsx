@@ -6,6 +6,8 @@ import { expensesApi } from "../api/expenses"
 import { tasksApi } from "../api/tasks"
 import { useAuthStore } from "../store/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import { Button } from "../components/ui/button"
+import { ListChecks, Clock as ClockIcon, DollarSign, Receipt } from "lucide-react"
 
 type TaskState = "NEW" | "IN_PROGRESS" | "BLOCKED" | "DONE"
 
@@ -69,7 +71,7 @@ export function DashboardTeamPage() {
         fromProjects = perProject.flat()
       }
 
-      // 2) If nothing came back (or API doesn’t support it well), try a global fallback
+      // 2) Global fallback (if available)
       let fromAll: any[] = []
       if ((!fromProjects || fromProjects.length === 0) && (tasksApi as any).getAll) {
         try {
@@ -100,7 +102,7 @@ export function DashboardTeamPage() {
         }
       })
     },
-    enabled: !!user?.id, // don’t block on projects; we can still do global fallback
+    enabled: !!user?.id,
     refetchInterval: POLL_MS,
     refetchOnWindowFocus: true,
   })
@@ -128,6 +130,7 @@ export function DashboardTeamPage() {
   }, [myTasks])
 
   const [dragTaskId, setDragTaskId] = useState<string | null>(null)
+  const [dragOverCol, setDragOverCol] = useState<TaskState | null>(null)
 
   const moveMutation = useMutation({
     mutationFn: ({ id, state }: { id: string; state: TaskState }) => tasksApi.move(id, state),
@@ -155,105 +158,169 @@ export function DashboardTeamPage() {
   function onDrop(_e: React.DragEvent, targetState: TaskState) {
     const id = dragTaskId
     setDragTaskId(null)
+    setDragOverCol(null)
     if (!id) return
     moveMutation.mutate({ id, state: targetState })
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">My Work</h1>
-        <p className="text-gray-600">Welcome back{user?.fullName ? `, ${user.fullName}` : ""}</p>
-      </div>
-
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">My Tasks</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{myTasksCount}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Hours Logged Today</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{todayHours}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Billable Hours</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">--</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-sm">Expenses Submitted</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{(expenses as any[]).length}</p></CardContent>
-        </Card>
-      </div>
-
-      {/* My Tasks Kanban */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">My Tasks (across projects)</h2>
-          {isFetchingTasks && <p className="text-xs text-gray-400">Refreshing tasks...</p>}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">My Work</h1>
+          <p className="text-gray-600">Welcome back{user?.fullName ? `, ${user.fullName}` : ""}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {columns.map((column) => (
-            <div
-              key={column}
-              className="bg-gray-50 rounded-lg p-4 min-h-[300px]"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => onDrop(e, column)}
-            >
-              <h3 className="font-semibold mb-4 text-sm text-gray-700">{column.replace("_", " ")}</h3>
+        {/* KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="rounded-xl shadow-sm border border-gray-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <span className="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-blue-100">
+                  <ListChecks className="w-4 h-4 text-blue-700" />
+                </span>
+                My Tasks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-gray-900">{myTasksCount}</p>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-3">
-                {grouped[column].map((task: any) => (
-                  <Card
-                    key={task.id}
-                    className="hover:shadow-md cursor-move"
-                    draggable
-                    onDragStart={(e) => onDragStart(e, task.id)}
-                  >
-                    <CardContent className="p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm">{task.title}</p>
-                        <span className="text-[10px] text-gray-500">
-                          {task._projectCode || task._projectName || ""}
-                        </span>
-                      </div>
+          <Card className="rounded-xl shadow-sm border border-gray-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <span className="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-blue-100">
+                  <ClockIcon className="w-4 h-4 text-blue-700" />
+                </span>
+                Hours Logged Today
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-gray-900">{todayHours}</p>
+            </CardContent>
+          </Card>
 
-                      {task.description && (
-                        <p className="text-xs text-gray-600 line-clamp-2">{task.description}</p>
-                      )}
+          <Card className="rounded-xl shadow-sm border border-gray-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <span className="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-blue-100">
+                  <DollarSign className="w-4 h-4 text-blue-700" />
+                </span>
+                Billable Hours
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-gray-900">--</p>
+            </CardContent>
+          </Card>
 
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${
-                            task.priority === "CRITICAL"
-                              ? "bg-red-100 text-red-800"
-                              : task.priority === "HIGH"
-                              ? "bg-orange-100 text-orange-800"
-                              : task.priority === "MEDIUM"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {task.priority}
-                        </span>
+          <Card className="rounded-xl shadow-sm border border-gray-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <span className="inline-flex w-7 h-7 items-center justify-center rounded-lg bg-blue-100">
+                  <Receipt className="w-4 h-4 text-blue-700" />
+                </span>
+                Expenses Submitted
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-gray-900">{(expenses as any[]).length}</p>
+            </CardContent>
+          </Card>
+        </div>
 
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] text-gray-600">
-                            {Number(task._estimateHours) ? `${Number(task._estimateHours)}h` : "—"}
-                          </span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-green-100 text-green-700">
-                            Assigned to me
+        {/* My Tasks Kanban */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">My Tasks (across projects)</h2>
+            {isFetchingTasks && <p className="text-xs text-gray-400">Refreshing tasks...</p>}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {columns.map((column) => (
+              <div
+                key={column}
+                className={`rounded-xl p-4 min-h-[320px] bg-white border
+                  ${dragOverCol === column ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200"}
+                `}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={() => setDragOverCol(column)}
+                onDragLeave={() => setDragOverCol((c) => (c === column ? null : c))}
+                onDrop={(e) => onDrop(e, column)}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-sm text-gray-700 tracking-wide">
+                    {column.replace("_", " ")}
+                  </h3>
+                  <span className="text-xs text-gray-400">{grouped[column].length}</span>
+                </div>
+
+                <div className="space-y-3">
+                  {grouped[column].map((task: any) => (
+                    <Card
+                      key={task.id}
+                      className="hover:shadow-md cursor-move rounded-lg border border-gray-200 transition-shadow"
+                      draggable
+                      onDragStart={(e) => onDragStart(e, task.id)}
+                    >
+                      <CardContent className="p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="font-medium text-sm text-gray-900 truncate">{task.title}</p>
+                          <span className="text-[10px] text-gray-500 flex-shrink-0">
+                            {task._projectCode || task._projectName || ""}
                           </span>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {grouped[column].length === 0 && <p className="text-xs text-gray-400">No tasks</p>}
+
+                        {task.description && (
+                          <p className="text-xs text-gray-600 line-clamp-2">{task.description}</p>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-xs px-2 py-1 rounded-lg font-medium
+                              ${
+                                task.priority === "CRITICAL"
+                                  ? "bg-red-100 text-red-800"
+                                  : task.priority === "HIGH"
+                                  ? "bg-orange-100 text-orange-800"
+                                  : task.priority === "MEDIUM"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }
+                            `}
+                          >
+                            {task.priority}
+                          </span>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] text-gray-600">
+                              {Number(task._estimateHours) ? `${Number(task._estimateHours)}h` : "—"}
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-lg bg-green-100 text-green-700">
+                              Assigned to me
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  {grouped[column].length === 0 && (
+                    <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-xs text-gray-400">
+                      No tasks
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        {/* Quick actions (optional, purely presentational) */}
+        <div className="hidden">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Create Task</Button>
         </div>
       </div>
     </div>

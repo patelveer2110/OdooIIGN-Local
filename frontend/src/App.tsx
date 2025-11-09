@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { useAuthStore } from "./store/auth"
-import { Navbar } from "./components/Navbar"
+import { Navbar } from "./components/Navbar.tsx"
 
 import { LoginPage } from "./pages/LoginPage"
 import DashboardAdminPage from "./pages/DashboardAdminPage"
@@ -21,6 +21,7 @@ import VendorBillViewPage from "./pages/VendorBillViewPage"
 import { ExpensesPage } from "./pages/ExpensesPage"
 import { AnalyticsPage } from "./pages/AnalyticsPage"
 import { ProfilePage } from "./pages/ProfilePage"
+import ProjectCreatePage from "./pages/ProjectCreatePage"
 import TasksPage from "./pages/TasksPage"
 import SettingsPage from "./pages/SettingsPage"
 import SignupPage from "./pages/SignupPage"
@@ -38,16 +39,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       <main className="flex-1 p-4">{children}</main>
     </div>
   ) : (
-    <Navigate to="/login" />
+    <Navigate to="/login" replace />
   )
 }
 
 /** Role-aware dashboard selector for /dashboard */
 function RoleDashboard() {
   const role = (useAuthStore((s) => s.user?.role) || "").toUpperCase()
-  if (role === "TEAM_MEMBER") {
-    return <Navigate to="/dashboard-team" replace />
-  }
+  if (role === "TEAM_MEMBER") return <Navigate to="/dashboard-team" replace />
   return <DashboardPage />
 }
 
@@ -71,6 +70,9 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          {/* Public landing */}
+          <Route path="/" element={<Hero />} />
+
           {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
@@ -201,6 +203,17 @@ export function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* NEW PROJECT (remove the extra <Routes>, keep this single Route) */}
+          <Route
+            path="/projects/new"
+            element={
+              <ProtectedRoute>
+                <ProjectCreatePage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/projects/:projectId"
             element={
@@ -210,8 +223,8 @@ export function App() {
             }
           />
 
-          {/* Public landing */}
-          <Route path="/" element={<Hero />} />
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

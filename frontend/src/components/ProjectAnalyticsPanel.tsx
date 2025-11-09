@@ -13,7 +13,7 @@ import { tasksApi } from "@/api/tasks"
 import { timesheetsApi } from "@/api/timesheets"
 import { projectsApi } from "@/api/projects"
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8A2BE2", "#2F4F4F"]
+const COLORS = ["#2563EB", "#10B981", "#F59E0B", "#F97316", "#8B5CF6", "#0F172A"] // tuned to OneFlow palette
 
 type Props = {
   projectId: string
@@ -90,21 +90,19 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
     return Array.from(map.entries()).map(([name, hours]) => ({ name, hours }))
   }, [timesheets])
 
-  // ------- Burndown: cumulative logged hours over time vs estimated total -------
+  // ------- Burndown -------
   const burndownData = useMemo(() => {
     const toNum = (v: any) => (isFinite(Number(v)) ? Number(v) : 0)
     const dateKey = (d: string) => (d ? d.slice(0, 10) : "Unknown")
 
-    // sum per day
     const perDay = new Map<string, number>()
     ;(timesheets as any[]).forEach((t: any) => {
       const k = dateKey(t.workDate || t.createdAt || "")
       perDay.set(k, (perDay.get(k) || 0) + toNum(t.durationHours))
     })
-    // sort days
+
     const days = Array.from(perDay.entries()).sort((a, b) => a[0].localeCompare(b[0]))
 
-    // cumulative
     let acc = 0
     const estTotal = (tasks as any[]).reduce((s, t) => s + toNum(t.estimateHours), 0)
 
@@ -113,7 +111,6 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
       return { day, logged: acc, estimateTotal: estTotal }
     })
 
-    // ensure at least one point for empty projects
     if (rows.length === 0) {
       return [{ day: new Date().toISOString().slice(0, 10), logged: 0, estimateTotal: estTotal }]
     }
@@ -121,43 +118,62 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
   }, [timesheets, tasks])
 
   const loading = loadingTasks || loadingTs || loadingFin
+  const fmtMoney = (n: number) =>
+    (Number(n) || 0).toLocaleString(undefined, { style: "currency", currency: (project?.currency as any) || "USD", maximumFractionDigits: 0 })
 
   return (
-    <div className="space-y-6">
-      <div>ertgfh</div>
+    <div className="min-h-[200px] space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-600">Tasks</CardTitle></CardHeader>
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-600">Tasks</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{kpis.doneTasks}/{kpis.totalTasks}</div>
+            <div className="text-2xl font-bold text-gray-900">{kpis.doneTasks}/{kpis.totalTasks}</div>
             <div className="text-xs text-gray-500">Done / Total</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-600">Est. Hours</CardTitle></CardHeader>
+
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-600">Est. Hours</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{kpis.estDone}/{kpis.estTotal}</div>
+            <div className="text-2xl font-bold text-gray-900">{kpis.estDone}/{kpis.estTotal}</div>
             <div className="text-xs text-gray-500">Completed / Total</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-600">Logged Hours</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold">{kpis.loggedHours}</div></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-600">Profit</CardTitle></CardHeader>
+
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-600">Logged Hours</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">${(kpis.profit/1000).toFixed(1)}K</div>
+            <div className="text-2xl font-bold text-gray-900">{kpis.loggedHours}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-600">Profit</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {(kpis.profit/1000).toFixed(1)}K
+            </div>
             <div className="text-xs text-gray-500">{kpis.margin.toFixed(1)}% margin</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-600">Budget Usage</CardTitle></CardHeader>
+
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-gray-600">Budget Usage</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{kpis.budget ? `${kpis.budgetUsagePct}%` : "—"}</div>
+            <div className="text-2xl font-bold text-gray-900">{kpis.budget ? `${kpis.budgetUsagePct}%` : "—"}</div>
             {kpis.budget ? (
-              <div className="text-xs text-gray-500">of ${kpis.budget.toLocaleString()}</div>
+              <div className="text-xs text-gray-500">of {fmtMoney(kpis.budget)}</div>
             ) : (
               <div className="text-xs text-gray-400">No budget</div>
             )}
@@ -168,8 +184,10 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Task Status */}
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Task Status Distribution</CardTitle></CardHeader>
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-900">Task Status Distribution</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -196,8 +214,10 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
         </Card>
 
         {/* Hours by user */}
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Hours Logged by User</CardTitle></CardHeader>
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-900">Hours Logged by User</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -206,7 +226,7 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
                   <YAxis />
                   <RPTooltip />
                   <Legend />
-                  <Bar dataKey="hours" name="Hours" fill="#0088FE" />
+                  <Bar dataKey="hours" name="Hours" fill="#2563EB" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -214,8 +234,10 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
         </Card>
 
         {/* Burndown */}
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Burndown (Logged vs Estimate)</CardTitle></CardHeader>
+        <Card className="rounded-xl shadow-sm border border-gray-100">
+          <CardHeader>
+            <CardTitle className="text-sm text-gray-900">Burndown (Logged vs Estimate)</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -224,8 +246,8 @@ export function ProjectAnalyticsPanel({ projectId, project }: Props) {
                   <YAxis />
                   <RPTooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="logged" name="Logged (cum.)" stroke="#00C49F" dot={false} />
-                  <Line type="monotone" dataKey="estimateTotal" name="Estimate (total)" stroke="#FF8042" dot={false} />
+                  <Line type="monotone" dataKey="logged" name="Logged (cum.)" stroke="#10B981" dot={false} />
+                  <Line type="monotone" dataKey="estimateTotal" name="Estimate (total)" stroke="#F97316" dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

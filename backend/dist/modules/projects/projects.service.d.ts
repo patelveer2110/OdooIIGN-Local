@@ -1,6 +1,20 @@
 import { PrismaService } from "@/prisma/prisma.service";
+type CreateProjectDto = {
+    name: string;
+    code?: string;
+    description?: string;
+    budgetAmount?: number | string;
+    currency?: string;
+    status?: string;
+    startDate?: string | Date;
+    dueDate?: string | Date;
+    managerId?: string;
+    [key: string]: any;
+};
+type UpdateProjectDto = CreateProjectDto;
 export declare class ProjectsService {
     private prisma;
+    constructor(prisma: PrismaService);
     getProjectMetrics(): Promise<{
         totalProjects: number;
         totalRevenue: number;
@@ -11,7 +25,6 @@ export declare class ProjectsService {
         month: string;
         utilization: number;
     }>>;
-    constructor(prisma: PrismaService);
     findAll(filters?: any): Promise<({
         projectManager: {
             email: string;
@@ -33,13 +46,13 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
-        currency: string;
         code: string;
+        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+        currency: string;
+        startDate: Date;
         customerId: string | null;
         projectManagerId: string;
-        startDate: Date;
         endDate: Date | null;
-        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     })[]>;
@@ -66,8 +79,8 @@ export declare class ProjectsService {
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            projectId: string;
             currency: string;
+            projectId: string;
             notes: string | null;
             amount: import("@prisma/client/runtime/library").Decimal;
             billable: boolean;
@@ -94,8 +107,8 @@ export declare class ProjectsService {
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
-            projectId: string;
             dueDate: Date | null;
+            projectId: string;
             title: string;
             state: import(".prisma/client").$Enums.TaskState;
             priority: import(".prisma/client").$Enums.TaskPriority;
@@ -110,17 +123,17 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
-        currency: string;
         code: string;
+        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+        currency: string;
+        startDate: Date;
         customerId: string | null;
         projectManagerId: string;
-        startDate: Date;
         endDate: Date | null;
-        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     }) | null>;
-    create(data: any): Promise<{
+    create(body: CreateProjectDto): Promise<{
         projectManager: {
             email: string;
             fullName: string;
@@ -134,17 +147,17 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
-        currency: string;
         code: string;
+        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+        currency: string;
+        startDate: Date;
         customerId: string | null;
         projectManagerId: string;
-        startDate: Date;
         endDate: Date | null;
-        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     }>;
-    update(id: string, data: any): Promise<{
+    update(id: string, body: UpdateProjectDto): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.ProjectStatus;
         defaultHourlyRate: import("@prisma/client/runtime/library").Decimal | null;
@@ -152,13 +165,13 @@ export declare class ProjectsService {
         updatedAt: Date;
         name: string;
         description: string | null;
-        currency: string;
         code: string;
+        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+        currency: string;
+        startDate: Date;
         customerId: string | null;
         projectManagerId: string;
-        startDate: Date;
         endDate: Date | null;
-        budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
         billableFlag: boolean;
         projectType: import(".prisma/client").$Enums.ProjectType;
     }>;
@@ -170,4 +183,5 @@ export declare class ProjectsService {
         profitMargin: number;
     } | null>;
 }
+export {};
 //# sourceMappingURL=projects.service.d.ts.map

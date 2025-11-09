@@ -3,6 +3,7 @@
 import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "@/store/auth"
 import { Button } from "@/components/ui/button"
+import { LogOut } from "lucide-react"
 
 export function Navbar() {
   const navigate = useNavigate()
@@ -15,41 +16,45 @@ export function Navbar() {
   }
 
   return (
-    <nav className="w-full bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo / Home link */}
+    <nav className="w-full sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
+        {/* Left: Brand */}
         <div
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-2 cursor-pointer group"
           onClick={() => navigate("/dashboard")}
         >
-          <img
-            src="/logo.svg"
-            alt="OneFlow Logo"
-            className="h-8 w-8 object-contain"
-          />
-          <span className="font-bold text-lg text-blue-600">OneFlow</span>
+          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-700 transition">
+            <span className="text-white font-bold text-lg">O</span>
+          </div>
+          <span className="font-bold text-lg sm:text-xl text-gray-900 group-hover:text-blue-600 transition">
+            OneFlow
+          </span>
         </div>
 
-        {/* Right side: User info + logout */}
+        {/* Right: User info + actions */}
         <div className="flex items-center gap-4">
           {user?.fullName && (
-            <span className="text-sm text-gray-600 hidden sm:block">
-              {user.fullName}{" "}
-              <span className="text-gray-400 text-xs">
-                ({String(user.role).replace("_", " ")})
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-sm font-medium text-gray-900">{user.fullName}</span>
+              <span className="text-xs text-gray-500 capitalize">
+                {String(user.role || "").replace("_", " ").toLowerCase()}
               </span>
-            </span>
+            </div>
           )}
+
           <Button
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="border-gray-300"
+            className="border-gray-300 text-gray-700 hover:border-blue-600 hover:text-blue-600 transition rounded-lg flex items-center gap-2"
           >
-            Logout
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Logout</span>
           </Button>
         </div>
       </div>
     </nav>
   )
 }
+
+export default Navbar

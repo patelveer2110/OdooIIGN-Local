@@ -29,7 +29,7 @@ export function TaskBoard({
   })
   const role = (me?.role ?? "").toUpperCase()
   const canChangeAssignee = role === "ADMIN" || role === "PROJECT_MANAGER"
-  const canCreateTask = canChangeAssignee // same rule
+  const canCreateTask = canChangeAssignee
 
   // All users (assignment list)
   const { data: users = [] } = useQuery({
@@ -40,13 +40,14 @@ export function TaskBoard({
 
   const [assigneeFilter, setAssigneeFilter] = useState("")
   const [dragTaskId, setDragTaskId] = useState<string | null>(null)
+  const [dragOverCol, setDragOverCol] = useState<Task["state"] | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [newTask, setNewTask] = useState<Partial<Task>>({
     title: "",
     description: "",
     assigneeId: "",
     priority: "MEDIUM",
-    estimateHours: 1,         // 👈 default estimate
+    estimateHours: 1,
     state: "NEW",
   })
 
@@ -87,16 +88,16 @@ export function TaskBoard({
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", projectId] }),
   })
 
-  // Create task (always NEW) — guard by role
+  // Create task (always NEW)
   const createMutation = useMutation({
     mutationFn: (data: Partial<Task>) => {
       if (!canCreateTask) {
         return Promise.reject(new Error("Only Admin/Manager can create tasks"))
       }
-
-      // normalize the payload (ensure estimateHours is a number when provided)
       const estimate =
-        data.estimateHours === undefined || data.estimateHours === null || data.estimateHours === ("" as any)
+        data.estimateHours === undefined ||
+        data.estimateHours === null ||
+        (data.estimateHours as any) === ""
           ? undefined
           : Number(data.estimateHours)
 
@@ -126,6 +127,7 @@ export function TaskBoard({
   function onDrop(_e: React.DragEvent, targetState: Task["state"]) {
     const id = dragTaskId
     setDragTaskId(null)
+    setDragOverCol(null)
     if (!id) return
     moveMutation.mutate({ id, state: targetState })
   }
@@ -145,12 +147,15 @@ export function TaskBoard({
   }
 
   return (
-    <div className="space-y-3">
-      {/* Top bar: New Task visible ONLY for Admin/Manager */}
-      <div className="flex items-center justify-end gap-3">
+    <div className="min-h-[200px] space-y-4">
+      {/* Top bar */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-500">
+          {isFetching ? "Refreshing tasks…" : ""}
+        </div>
         {canCreateTask && (
           <Button
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
             onClick={() => setShowCreate((s) => !s)}
           >
             {showCreate ? "Cancel" : "+ New Task"}
@@ -158,26 +163,26 @@ export function TaskBoard({
         )}
       </div>
 
-      {/* Create form visible ONLY for Admin/Manager */}
+      {/* Create form (Admins/PMs) */}
       {canCreateTask && showCreate && (
-        <div className="border rounded bg-white p-3">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
             <input
-              className="border rounded px-2 py-1"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Task Title"
               value={newTask.title || ""}
               onChange={(e) => setNewTask((t) => ({ ...t, title: e.target.value }))}
             />
 
             <input
-              className="border rounded px-2 py-1 md:col-span-2"
+              className="px-3 py-2 border border-gray-300 rounded-lg md:col-span-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Description"
               value={newTask.description || ""}
               onChange={(e) => setNewTask((t) => ({ ...t, description: e.target.value }))}
             />
 
             <select
-              className="border rounded px-2 py-1"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               value={newTask.priority || "MEDIUM"}
               onChange={(e) =>
                 setNewTask((t) => ({ ...t, priority: e.target.value as Task["priority"] }))
@@ -190,9 +195,9 @@ export function TaskBoard({
               ))}
             </select>
 
-            {/* 👇 Estimate Hours */}
+            {/* Estimate Hours */}
             <input
-              className="border rounded px-2 py-1"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               type="number"
               min={0}
               step={0.5}
@@ -207,9 +212,11 @@ export function TaskBoard({
               title="Estimated effort in hours"
             />
 
-            {/* Assignee picker — enabled only for Admin/Manager */}
+            {/* Assignee picker */}
             <select
-              className={`border rounded px-2 py-1 ${!canChangeAssignee ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                !canChangeAssignee ? "opacity-70 cursor-not-allowed" : ""
+              }`}
               title={canChangeAssignee ? "Select assignee" : "Only Admin/Manager can assign a user"}
               disabled={!canChangeAssignee}
               value={newTask.assigneeId || ""}
@@ -228,7 +235,7 @@ export function TaskBoard({
             </select>
 
             <Button
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 text-white rounded-lg"
               onClick={() => createMutation.mutate(newTask)}
               disabled={!newTask.title || createMutation.isPending}
             >
@@ -238,51 +245,62 @@ export function TaskBoard({
         </div>
       )}
 
-      {isFetching && <p className="text-xs text-gray-400">Refreshing tasks...</p>}
-
       {/* Kanban */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {columns.map((column) => (
           <div
             key={column}
-            className="bg-gray-50 rounded-lg p-4 min-h-[300px]"
+            className={`rounded-xl p-4 min-h-[320px] bg-white border transition
+              ${dragOverCol === column ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200"}
+            `}
             onDragOver={(e) => e.preventDefault()}
+            onDragEnter={() => setDragOverCol(column)}
+            onDragLeave={() => setDragOverCol((c) => (c === column ? null : c))}
             onDrop={(e) => onDrop(e, column)}
           >
-            <h3 className="font-semibold mb-4 text-sm text-gray-700">
-              {column.replace("_", " ")}
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-sm text-gray-700 tracking-wide">
+                {column.replace("_", " ")}
+              </h3>
+              <span className="text-xs text-gray-400">{grouped[column].length}</span>
+            </div>
+
             <div className="space-y-3">
               {grouped[column].map((task) => (
                 <Card
                   key={task.id}
-                  className="hover:shadow-md cursor-move"
+                  className="hover:shadow-md cursor-move rounded-lg border border-gray-200 transition-shadow"
                   draggable
                   onDragStart={(e) => onDragStart(e, task.id)}
                 >
                   <CardContent className="p-3 space-y-2">
-                    <p className="font-medium text-sm">{task.title}</p>
+                    <p className="font-medium text-sm text-gray-900">{task.title}</p>
                     {task.description && (
                       <p className="text-xs text-gray-600 line-clamp-2">{task.description}</p>
                     )}
+
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          task.priority === "CRITICAL"
-                            ? "bg-red-100 text-red-800"
-                            : task.priority === "HIGH"
-                            ? "bg-orange-100 text-orange-800"
-                            : task.priority === "MEDIUM"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`text-xs px-2 py-1 rounded-lg font-medium
+                          ${
+                            task.priority === "CRITICAL"
+                              ? "bg-red-100 text-red-800"
+                              : task.priority === "HIGH"
+                              ? "bg-orange-100 text-orange-800"
+                              : task.priority === "MEDIUM"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                          }
+                        `}
                       >
                         {task.priority}
                       </span>
 
-                      {/* Assignee dropdown — disabled for team members */}
+                      {/* Assignee dropdown */}
                       <select
-                        className={`text-xs border rounded px-1 py-0.5 ${!canChangeAssignee ? "opacity-70 cursor-not-allowed" : ""}`}
+                        className={`text-xs border rounded-md px-2 py-1 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          !canChangeAssignee ? "opacity-70 cursor-not-allowed" : ""
+                        }`}
                         title={
                           canChangeAssignee
                             ? "Change assignee"
@@ -307,6 +325,12 @@ export function TaskBoard({
                   </CardContent>
                 </Card>
               ))}
+
+              {grouped[column].length === 0 && (
+                <div className="rounded-lg border border-dashed border-gray-300 p-4 text-center text-xs text-gray-400">
+                  No tasks
+                </div>
+              )}
             </div>
           </div>
         ))}

@@ -23,13 +23,13 @@ export declare class ExpensesController {
             updatedAt: Date;
             name: string;
             description: string | null;
-            currency: string;
             code: string;
+            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
+            currency: string;
+            startDate: Date;
             customerId: string | null;
             projectManagerId: string;
-            startDate: Date;
             endDate: Date | null;
-            budgetAmount: import("@prisma/client/runtime/library").Decimal | null;
             billableFlag: boolean;
             projectType: import(".prisma/client").$Enums.ProjectType;
         };
@@ -38,8 +38,8 @@ export declare class ExpensesController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        projectId: string;
         currency: string;
+        projectId: string;
         notes: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
         billable: boolean;
@@ -54,8 +54,8 @@ export declare class ExpensesController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        projectId: string;
         currency: string;
+        projectId: string;
         notes: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
         billable: boolean;
@@ -70,8 +70,8 @@ export declare class ExpensesController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        projectId: string;
         currency: string;
+        projectId: string;
         notes: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
         billable: boolean;
@@ -86,8 +86,8 @@ export declare class ExpensesController {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        projectId: string;
         currency: string;
+        projectId: string;
         notes: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
         billable: boolean;
