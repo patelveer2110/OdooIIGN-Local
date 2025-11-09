@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimesheetsController = void 0;
+// src/modules/timesheets/timesheets.controller.ts
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_guard_1 = require("../../common/guards/jwt.guard");
@@ -21,7 +22,7 @@ let TimesheetsController = class TimesheetsController {
     constructor(timesheetsService) {
         this.timesheetsService = timesheetsService;
     }
-    async findAll(query) {
+    async findAll(req, query) {
         const filters = {};
         if (query.user)
             filters.userId = query.user;
@@ -29,6 +30,10 @@ let TimesheetsController = class TimesheetsController {
             filters.projectId = query.project;
         if (query.status)
             filters.status = query.status;
+        // Optional: default TEAM_MEMBER to their own timesheets if no user filter supplied
+        if (!filters.userId && req?.user?.role === "TEAM_MEMBER") {
+            filters.userId = req.user.id;
+        }
         return this.timesheetsService.findAll(filters);
     }
     async findById(id) {
@@ -38,7 +43,8 @@ let TimesheetsController = class TimesheetsController {
         return this.timesheetsService.create(body);
     }
     async update(id, body) {
-        return this.timesheetsService.findById(id); // Simplified for MVP
+        // TODO: implement real update
+        return this.timesheetsService.findById(id);
     }
     async approve(id) {
         return this.timesheetsService.approve(id);
@@ -50,13 +56,15 @@ let TimesheetsController = class TimesheetsController {
 exports.TimesheetsController = TimesheetsController;
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], TimesheetsController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
@@ -70,22 +78,22 @@ __decorate([
 ], TimesheetsController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(":id"),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], TimesheetsController.prototype, "update", null);
 __decorate([
-    (0, common_1.Put)(':id/approve'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Put)(":id/approve"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TimesheetsController.prototype, "approve", null);
 __decorate([
-    (0, common_1.Put)(':id/reject'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Put)(":id/reject"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)

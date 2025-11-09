@@ -14,9 +14,9 @@ export declare class TasksService {
             status: $Enums.TimesheetStatus;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             projectId: string;
             notes: string | null;
-            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: Prisma.Decimal;
@@ -29,9 +29,9 @@ export declare class TasksService {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: Prisma.Decimal;
             timezone: string;
@@ -56,9 +56,9 @@ export declare class TasksService {
             user: {
                 email: string;
                 fullName: string;
+                role: $Enums.UserRole;
                 id: string;
                 passwordHash: string;
-                role: $Enums.UserRole;
                 status: $Enums.UserStatus;
                 defaultHourlyRate: Prisma.Decimal;
                 timezone: string;
@@ -66,10 +66,10 @@ export declare class TasksService {
                 updatedAt: Date;
             };
         } & {
-            id: string;
             role: string;
-            projectId: string;
+            id: string;
             userId: string;
+            projectId: string;
             addedAt: Date;
         })[];
     } & {
@@ -114,9 +114,9 @@ export declare class TasksService {
             status: $Enums.TimesheetStatus;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             projectId: string;
             notes: string | null;
-            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: Prisma.Decimal;
@@ -145,9 +145,9 @@ export declare class TasksService {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: Prisma.Decimal;
             timezone: string;
@@ -192,9 +192,9 @@ export declare class TasksService {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: Prisma.Decimal;
             timezone: string;
@@ -241,9 +241,9 @@ export declare class TasksService {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: Prisma.Decimal;
             timezone: string;
@@ -285,9 +285,9 @@ export declare class TasksService {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: Prisma.Decimal;
             timezone: string;

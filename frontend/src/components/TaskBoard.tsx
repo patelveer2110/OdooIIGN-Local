@@ -16,21 +16,22 @@ export function TaskBoard({
   const queryClient = useQueryClient()
   const columns: Task["state"][] = ["NEW", "IN_PROGRESS", "BLOCKED", "DONE"]
 
-  // 🧩 Tasks
+  // Tasks
   const { data: tasks = [], isFetching } = useQuery({
     queryKey: ["tasks", projectId],
     queryFn: async () => (await tasksApi.getByProject(projectId)).data,
   })
 
-  // 👤 Current user (for role-based permissions)
+  // Current user (for role-based permissions)
   const { data: me } = useQuery({
     queryKey: ["me"],
-    queryFn: async () => (await usersApi.getMe()).data, // implement usersApi.getMe() if missing
+    queryFn: async () => (await usersApi.getMe()).data,
   })
   const role = (me?.role ?? "").toUpperCase()
-  const canChangeAssignee = role === "ADMIN" || role === "MANAGER"
+  const canChangeAssignee = role === "ADMIN" || role === "PROJECT_MANAGER"
+  const canCreateTask = canChangeAssignee // same rule
 
-  // 👥 All users (assignment list uses ALL users)
+  // All users (assignment list)
   const { data: users = [] } = useQuery({
     queryKey: ["users"],
     queryFn: async () => (await usersApi.getAll()).data,
@@ -45,10 +46,11 @@ export function TaskBoard({
     description: "",
     assigneeId: "",
     priority: "MEDIUM",
+    estimateHours: 1,         // 👈 default estimate
     state: "NEW",
   })
 
-  // 🧱 Group by state
+  // Group by state
   const grouped = useMemo(() => {
     const map: Record<Task["state"], Task[]> = {
       NEW: [],
@@ -60,7 +62,7 @@ export function TaskBoard({
     return map
   }, [tasks])
 
-  // 🔄 Move between columns
+  // Move between columns
   const moveMutation = useMutation({
     mutationFn: ({ id, state }: { id: string; state: Task["state"] }) =>
       tasksApi.move(id, state),
@@ -78,17 +80,28 @@ export function TaskBoard({
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["tasks", projectId] }),
   })
 
-  // ✏️ Update task (assignee change etc.)
+  // Update task (assignee change etc.)
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Task> }) =>
       tasksApi.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", projectId] }),
   })
 
-  // ➕ Create task (always NEW)
+  // Create task (always NEW) — guard by role
   const createMutation = useMutation({
-    mutationFn: (data: Partial<Task>) =>
-      tasksApi.create(projectId, { ...data, state: "NEW" }),
+    mutationFn: (data: Partial<Task>) => {
+      if (!canCreateTask) {
+        return Promise.reject(new Error("Only Admin/Manager can create tasks"))
+      }
+
+      // normalize the payload (ensure estimateHours is a number when provided)
+      const estimate =
+        data.estimateHours === undefined || data.estimateHours === null || data.estimateHours === ("" as any)
+          ? undefined
+          : Number(data.estimateHours)
+
+      return tasksApi.create(projectId, { ...data, estimateHours: estimate, state: "NEW" })
+    },
     onSuccess: (res) => {
       const created = res.data
       queryClient.setQueryData(["tasks", projectId], (old: any = []) => [created, ...old])
@@ -98,6 +111,7 @@ export function TaskBoard({
         description: "",
         assigneeId: "",
         priority: "MEDIUM",
+        estimateHours: 1,
         state: "NEW",
       })
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] })
@@ -132,28 +146,36 @@ export function TaskBoard({
 
   return (
     <div className="space-y-3">
+      {/* Top bar: New Task visible ONLY for Admin/Manager */}
       <div className="flex items-center justify-end gap-3">
-        
-        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setShowCreate((s) => !s)}>
-          {showCreate ? "Cancel" : "+ New Task"}
-        </Button>
+        {canCreateTask && (
+          <Button
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => setShowCreate((s) => !s)}
+          >
+            {showCreate ? "Cancel" : "+ New Task"}
+          </Button>
+        )}
       </div>
 
-      {showCreate && (
+      {/* Create form visible ONLY for Admin/Manager */}
+      {canCreateTask && showCreate && (
         <div className="border rounded bg-white p-3">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
             <input
               className="border rounded px-2 py-1"
               placeholder="Task Title"
               value={newTask.title || ""}
               onChange={(e) => setNewTask((t) => ({ ...t, title: e.target.value }))}
             />
+
             <input
               className="border rounded px-2 py-1 md:col-span-2"
               placeholder="Description"
               value={newTask.description || ""}
               onChange={(e) => setNewTask((t) => ({ ...t, description: e.target.value }))}
             />
+
             <select
               className="border rounded px-2 py-1"
               value={newTask.priority || "MEDIUM"}
@@ -168,14 +190,27 @@ export function TaskBoard({
               ))}
             </select>
 
-            {/* Create form assignee:
-                - Shows placeholder when empty
-                - Disabled for team members (cannot set assignee) */}
+            {/* 👇 Estimate Hours */}
+            <input
+              className="border rounded px-2 py-1"
+              type="number"
+              min={0}
+              step={0.5}
+              placeholder="Estimate (hrs)"
+              value={(newTask.estimateHours as number | string | undefined) ?? ""}
+              onChange={(e) =>
+                setNewTask((t) => ({
+                  ...t,
+                  estimateHours: e.target.value === "" ? ("" as any) : Number(e.target.value),
+                }))
+              }
+              title="Estimated effort in hours"
+            />
+
+            {/* Assignee picker — enabled only for Admin/Manager */}
             <select
               className={`border rounded px-2 py-1 ${!canChangeAssignee ? "opacity-70 cursor-not-allowed" : ""}`}
-              title={
-                canChangeAssignee ? "Select assignee" : "Only Admin/Manager can assign a user"
-              }
+              title={canChangeAssignee ? "Select assignee" : "Only Admin/Manager can assign a user"}
               disabled={!canChangeAssignee}
               value={newTask.assigneeId || ""}
               onChange={(e) =>
@@ -195,9 +230,9 @@ export function TaskBoard({
             <Button
               className="bg-green-600 hover:bg-green-700"
               onClick={() => createMutation.mutate(newTask)}
-              disabled={!newTask.title}
+              disabled={!newTask.title || createMutation.isPending}
             >
-              Create
+              {createMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </div>
         </div>
@@ -205,7 +240,7 @@ export function TaskBoard({
 
       {isFetching && <p className="text-xs text-gray-400">Refreshing tasks...</p>}
 
-      {/* 🗂️ Kanban */}
+      {/* Kanban */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {columns.map((column) => (
           <div
@@ -245,10 +280,7 @@ export function TaskBoard({
                         {task.priority}
                       </span>
 
-                      {/* Assignee dropdown on cards:
-                          - No "Unassigned" entry
-                          - Shows placeholder if empty
-                          - Disabled for team members */}
+                      {/* Assignee dropdown — disabled for team members */}
                       <select
                         className={`text-xs border rounded px-1 py-0.5 ${!canChangeAssignee ? "opacity-70 cursor-not-allowed" : ""}`}
                         title={
@@ -265,7 +297,7 @@ export function TaskBoard({
                             Select assignee
                           </option>
                         )}
-                        {filteredUsers.map((u) => (
+                        {assignableUsers.map((u) => (
                           <option key={u.id} value={u.id}>
                             {userLabel(u)}
                           </option>

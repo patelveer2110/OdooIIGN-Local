@@ -17,9 +17,9 @@ export declare class TasksController {
             status: $Enums.TimesheetStatus;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             projectId: string;
             notes: string | null;
-            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -32,9 +32,9 @@ export declare class TasksController {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -84,9 +84,9 @@ export declare class TasksController {
             status: $Enums.TimesheetStatus;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             projectId: string;
             notes: string | null;
-            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -115,9 +115,9 @@ export declare class TasksController {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -159,9 +159,9 @@ export declare class TasksController {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -203,9 +203,9 @@ export declare class TasksController {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -247,9 +247,9 @@ export declare class TasksController {
         assignee: {
             email: string;
             fullName: string;
+            role: $Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: $Enums.UserRole;
             status: $Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;

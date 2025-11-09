@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
@@ -19,9 +22,18 @@ let UsersController = class UsersController {
         this.usersService = usersService;
     }
     async findAll() {
-        const users = this.usersService.findAll();
-        console.log("Users", users);
-        return users;
+        return this.usersService.findAll();
+    }
+    async getMe(req) {
+        const { id, sub, userId, email } = req.user || {};
+        const where = {};
+        if (id || sub || userId)
+            where.id = id ?? sub ?? userId;
+        else if (email)
+            where.email = email;
+        else
+            throw new common_1.BadRequestException("JWT payload missing user identifier");
+        return this.usersService.findOne(where);
     }
     async findById(id) {
         return this.usersService.findById(id);
@@ -35,7 +47,15 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)("me"),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getMe", null);
+__decorate([
     (0, common_1.Get)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)

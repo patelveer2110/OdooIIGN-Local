@@ -17,33 +17,39 @@ let UsersService = class UsersService {
         this.prisma = prisma;
     }
     async findAll() {
-        const users = this.prisma.user.findMany({
-            select: {
-                id: true,
-                email: true,
-                fullName: true,
-                role: true,
-                status: true,
-                createdAt: true,
-            },
+        return this.prisma.user.findMany({
+            select: { id: true, fullName: true, email: true, role: true },
         });
-        console.log(users);
-        return users;
     }
     async findById(id) {
-        return this.prisma.user.findUnique({
+        if (!id)
+            throw new common_1.BadRequestException("User id is required");
+        const user = await this.prisma.user.findUnique({
             where: { id },
             select: {
-                id: true,
-                email: true,
-                fullName: true,
-                role: true,
-                defaultHourlyRate: true,
-                timezone: true,
-                status: true,
-                createdAt: true,
+                id: true, email: true, fullName: true, role: true,
+                defaultHourlyRate: true, timezone: true, status: true, createdAt: true,
             },
         });
+        if (!user)
+            throw new common_1.NotFoundException("User not found");
+        return user;
+    }
+    // used by /users/me
+    async findOne(where) {
+        if (!where.id && !where.email) {
+            throw new common_1.BadRequestException("Provide id or email");
+        }
+        const user = await this.prisma.user.findUnique({
+            where: where.id ? { id: where.id } : { email: where.email },
+            select: {
+                id: true, email: true, fullName: true, role: true,
+                defaultHourlyRate: true, timezone: true, status: true, createdAt: true,
+            },
+        });
+        if (!user)
+            throw new common_1.NotFoundException("User not found");
+        return user;
     }
     async update(id, data) {
         return this.prisma.user.update({

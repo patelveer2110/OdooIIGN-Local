@@ -2,13 +2,13 @@ import { TimesheetsService } from "./timesheets.service";
 export declare class TimesheetsController {
     private timesheetsService;
     constructor(timesheetsService: TimesheetsService);
-    findAll(query: any): Promise<({
+    findAll(req: any, query: any): Promise<({
         user: {
             email: string;
             fullName: string;
+            role: import(".prisma/client").$Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.UserRole;
             status: import(".prisma/client").$Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -51,9 +51,9 @@ export declare class TimesheetsController {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -67,9 +67,9 @@ export declare class TimesheetsController {
         user: {
             email: string;
             fullName: string;
+            role: import(".prisma/client").$Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.UserRole;
             status: import(".prisma/client").$Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -112,9 +112,9 @@ export declare class TimesheetsController {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -129,9 +129,9 @@ export declare class TimesheetsController {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -145,9 +145,9 @@ export declare class TimesheetsController {
         user: {
             email: string;
             fullName: string;
+            role: import(".prisma/client").$Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.UserRole;
             status: import(".prisma/client").$Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -190,9 +190,9 @@ export declare class TimesheetsController {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -207,9 +207,9 @@ export declare class TimesheetsController {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -224,9 +224,9 @@ export declare class TimesheetsController {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;

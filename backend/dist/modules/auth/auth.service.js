@@ -47,7 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../../prisma/prisma.service");
-const node_console_1 = require("node:console");
+const sign_up_dto_1 = require("./dto/sign-up.dto");
 let AuthService = class AuthService {
     constructor(prisma, jwtService) {
         this.prisma = prisma;
@@ -61,44 +61,43 @@ let AuthService = class AuthService {
             throw new common_1.BadRequestException("Email already in use");
         }
         const hashedPassword = await bcrypt.hash(signUpDto.password, 10);
+        // (Optional) extra guard: ensure role is within enum
+        const role = Object.values(sign_up_dto_1.UserRole).includes(signUpDto.role)
+            ? signUpDto.role
+            : sign_up_dto_1.UserRole.TEAM_MEMBER;
         const user = await this.prisma.user.create({
             data: {
                 email: signUpDto.email,
                 fullName: signUpDto.fullName,
                 passwordHash: hashedPassword,
-                role: "TEAM_MEMBER",
+                role, // <- use selected role
                 status: "ACTIVE",
             },
+            select: { id: true, email: true, fullName: true, role: true },
         });
         return this.generateToken(user);
     }
     async signIn(signInDto) {
-        console.log(signInDto);
-        console.log("Attempting to sign in user with email:", signInDto.email);
         const user = await this.prisma.user.findUnique({
             where: { email: signInDto.email },
         });
-        (0, node_console_1.log)(user);
-        if (!user) {
-            (0, node_console_1.log)("User not found");
+        if (!user)
             throw new common_1.UnauthorizedException("Invalid credentials");
-        }
         const isPasswordValid = await bcrypt.compare(signInDto.password, user.passwordHash);
-        if (!isPasswordValid) {
+        if (!isPasswordValid)
             throw new common_1.UnauthorizedException("Invalid credentials");
-        }
-        return this.generateToken(user);
+        return this.generateToken({
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role,
+        });
     }
     generateToken(user) {
         const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             accessToken: this.jwtService.sign(payload),
-            user: {
-                id: user.id,
-                email: user.email,
-                fullName: user.fullName,
-                role: user.role,
-            },
+            user,
         };
     }
 };

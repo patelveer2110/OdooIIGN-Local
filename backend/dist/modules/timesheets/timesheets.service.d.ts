@@ -7,9 +7,9 @@ export declare class TimesheetsService {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -23,9 +23,9 @@ export declare class TimesheetsService {
         user: {
             email: string;
             fullName: string;
+            role: import(".prisma/client").$Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.UserRole;
             status: import(".prisma/client").$Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -68,9 +68,9 @@ export declare class TimesheetsService {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -84,9 +84,9 @@ export declare class TimesheetsService {
         user: {
             email: string;
             fullName: string;
+            role: import(".prisma/client").$Enums.UserRole;
             id: string;
             passwordHash: string;
-            role: import(".prisma/client").$Enums.UserRole;
             status: import(".prisma/client").$Enums.UserStatus;
             defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
             timezone: string;
@@ -129,9 +129,9 @@ export declare class TimesheetsService {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -146,9 +146,9 @@ export declare class TimesheetsService {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -163,9 +163,9 @@ export declare class TimesheetsService {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -180,9 +180,9 @@ export declare class TimesheetsService {
         status: import(".prisma/client").$Enums.TimesheetStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         projectId: string;
         notes: string | null;
-        userId: string;
         taskId: string | null;
         workDate: Date;
         durationHours: import("@prisma/client/runtime/library").Decimal;

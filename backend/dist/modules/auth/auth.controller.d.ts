@@ -6,21 +6,11 @@ export declare class AuthController {
     constructor(authService: AuthService);
     signUp(signUpDto: SignUpDto): Promise<{
         accessToken: string;
-        user: {
-            id: any;
-            email: any;
-            fullName: any;
-            role: any;
-        };
+        user: any;
     }>;
     signIn(signInDto: SignInDto): Promise<{
         accessToken: string;
-        user: {
-            id: any;
-            email: any;
-            fullName: any;
-            role: any;
-        };
+        user: any;
     }>;
     logout(): Promise<{
         message: string;

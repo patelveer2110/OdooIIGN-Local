@@ -5,20 +5,28 @@ export declare class UsersController {
     findAll(): Promise<{
         email: string;
         fullName: string;
-        id: string;
         role: import(".prisma/client").$Enums.UserRole;
-        status: import(".prisma/client").$Enums.UserStatus;
-        createdAt: Date;
+        id: string;
     }[]>;
-    findById(id: string): Promise<{
+    getMe(req: any): Promise<{
         email: string;
         fullName: string;
-        id: string;
         role: import(".prisma/client").$Enums.UserRole;
+        id: string;
         status: import(".prisma/client").$Enums.UserStatus;
         defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
         timezone: string;
         createdAt: Date;
-    } | null>;
+    }>;
+    findById(id: string): Promise<{
+        email: string;
+        fullName: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        status: import(".prisma/client").$Enums.UserStatus;
+        defaultHourlyRate: import("@prisma/client/runtime/library").Decimal;
+        timezone: string;
+        createdAt: Date;
+    }>;
 }
 //# sourceMappingURL=users.controller.d.ts.map

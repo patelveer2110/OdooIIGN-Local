@@ -9,26 +9,33 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SignUpDto = void 0;
+exports.SignUpDto = exports.UserRole = void 0;
+// src/modules/auth/dto/sign-up.dto.ts
 const class_validator_1 = require("class-validator");
-const swagger_1 = require("@nestjs/swagger");
+var UserRole;
+(function (UserRole) {
+    UserRole["ADMIN"] = "ADMIN";
+    UserRole["PROJECT_MANAGER"] = "PROJECT_MANAGER";
+    UserRole["TEAM_MEMBER"] = "TEAM_MEMBER";
+    UserRole["FINANCE"] = "FINANCE";
+})(UserRole || (exports.UserRole = UserRole = {}));
 class SignUpDto {
 }
 exports.SignUpDto = SignUpDto;
 __decorate([
-    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], SignUpDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    (0, class_validator_1.IsString)(),
     (0, class_validator_1.MinLength)(6),
     __metadata("design:type", String)
 ], SignUpDto.prototype, "password", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], SignUpDto.prototype, "fullName", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(UserRole),
+    __metadata("design:type", String)
+], SignUpDto.prototype, "role", void 0);
 //# sourceMappingURL=sign-up.dto.js.map

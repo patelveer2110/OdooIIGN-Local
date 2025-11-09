@@ -9,13 +9,13 @@ import { SignInDto } from "./dto/sign-in.dto"
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post("signup")
+  @Post("sign-up")
   @ApiOperation({ summary: "Sign up a new user" })
   async signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto)
   }
 
-  @Post("login")
+  @Post("sign-in")
   @ApiOperation({ summary: "Sign in user" })
   async signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto)

@@ -9,8 +9,15 @@ import { Button } from "../components/ui/button"
 import { Link } from "react-router-dom"
 
 function toISODate(d: Date) {
-  // yyyy-mm-dd for <input type="date" />
-  return d.toISOString().slice(0, 10)
+  return d.toISOString().slice(0, 10) // yyyy-mm-dd for <input type="date" />
+}
+
+// Safely coerce unknown number-ish values (Prisma.Decimal, string, number)
+function toNum(v: any): number {
+  if (v == null) return 0
+  // Prisma.Decimal often serializes with toNumber()
+  if (typeof v?.toNumber === "function") return Number(v.toNumber())
+  return Number(v) || 0
 }
 
 export function DashboardAdminPage() {
@@ -39,57 +46,52 @@ export function DashboardAdminPage() {
     return (users as any[]).filter((u) => ["ADMIN", "MANAGER"].includes(norm(u.role || u.userRole)))
   }, [users])
 
-  const totalRevenue = invoices.reduce((s: number, i: any) => s + (i.totalAmount || 0), 0)
-  const totalExpenses = expenses.reduce((s: number, e: any) => s + (e.amount || 0), 0)
+  // ✅ Coerce amounts to numbers before summing (prevents string concatenation)
+  const totalRevenue = invoices.reduce((s: number, i: any) => s + toNum(i.totalAmount), 0)
+  const totalExpenses = expenses.reduce((s: number, e: any) => s + toNum(e.amount), 0)
 
   // ---- Create Project UI state
   const [showCreate, setShowCreate] = useState(false)
   const [newProject, setNewProject] = useState({
     name: "",
     code: "",
-    status: "PLANNING",          // schema default, but let user pick
-    currency: "USD",             // schema default is USD; still allow picking
-    budgetAmount: "",
-    projectManagerId: "",        // REQUIRED by schema
-    startDate: toISODate(new Date()), // REQUIRED by schema
-    endDate: "",                 // optional
-    billableFlag: true,          // schema default true
-    defaultHourlyRate: "",       // optional
-    projectType: "TIME_AND_MATERIALS", // schema default; optional to send
+    status: "PLANNING",                 // matches schema default, editable
+    currency: "USD",                    // schema default is USD
+    budgetAmount: "",                   // string input -> convert on submit
+    projectManagerId: "",               // REQUIRED
+    startDate: toISODate(new Date()),   // REQUIRED (yyyy-mm-dd)
+    endDate: "",                        // optional
+    billableFlag: true,                 // schema default true
+    defaultHourlyRate: "",              // optional
+    // projectType left to schema default TIME_AND_MATERIALS unless you expose it
   })
 
   // ---- Create Project mutation
   const createProject = useMutation({
     mutationFn: async () => {
-      // Guard required fields (schema requires projectManagerId & startDate)
-      if (!newProject.projectManagerId) {
-        throw new Error("Please select a Project Manager")
-      }
-      if (!newProject.startDate) {
-        throw new Error("Please choose a Start Date")
-      }
+      if (!newProject.projectManagerId) throw new Error("Please select a Project Manager")
+      if (!newProject.startDate) throw new Error("Please choose a Start Date")
 
       const payload: any = {
         name: newProject.name.trim(),
         code: newProject.code.trim(),
-        status: newProject.status,               // PLANNING | ACTIVE | ON_HOLD | COMPLETED
+        status: newProject.status,                   // PLANNING | ACTIVE | ON_HOLD | COMPLETED
         currency: newProject.currency || "USD",
-        projectManagerId: newProject.projectManagerId, // REQUIRED
-        startDate: new Date(newProject.startDate).toISOString(), // REQUIRED
+        projectManagerId: newProject.projectManagerId,  // REQUIRED
+        startDate: new Date(newProject.startDate).toISOString(), // REQUIRED ISO
+        billableFlag: !!newProject.billableFlag,
       }
 
-      // Optional fields only if provided
+      // Optional numeric/date fields
       if (newProject.budgetAmount !== "") payload.budgetAmount = Number(newProject.budgetAmount)
-      if (newProject.endDate) payload.endDate = new Date(newProject.endDate).toISOString()
-      if (typeof newProject.billableFlag === "boolean") payload.billableFlag = newProject.billableFlag
       if (newProject.defaultHourlyRate !== "") payload.defaultHourlyRate = Number(newProject.defaultHourlyRate)
-      if (newProject.projectType) payload.projectType = newProject.projectType
+      if (newProject.endDate) payload.endDate = new Date(newProject.endDate).toISOString()
 
       return projectsApi.create(payload)
     },
     onSuccess: (res) => {
       const created = res.data
-      // Optimistic list + revalidate
+      // Optimistic list + revalidate to ensure it is persisted
       queryClient.setQueryData(["projects"], (old: any = []) => [created, ...old])
       queryClient.invalidateQueries({ queryKey: ["projects"] })
 
@@ -105,7 +107,6 @@ export function DashboardAdminPage() {
         endDate: "",
         billableFlag: true,
         defaultHourlyRate: "",
-        projectType: "TIME_AND_MATERIALS",
       })
       setShowCreate(false)
     },
@@ -242,15 +243,6 @@ export function DashboardAdminPage() {
                 value={newProject.defaultHourlyRate}
                 onChange={(e) => setNewProject((p) => ({ ...p, defaultHourlyRate: e.target.value }))}
               />
-              {/* <select
-                className="border rounded px-2 py-1"
-                value={newProject.projectType}
-                onChange={(e) => setNewProject((p) => ({ ...p, projectType: e.target.value }))}
-              >
-                <option value="TIME_AND_MATERIALS">TIME_AND_MATERIALS</option>
-                <option value="FIXED_FEE">FIXED_FEE</option>
-                <option value="RETAINER">RETAINER</option>
-              </select> */}
             </div>
 
             <div className="flex gap-2">
@@ -305,7 +297,7 @@ export function DashboardAdminPage() {
                   </div>
                   {project.budgetAmount && (
                     <p className="text-xs text-gray-500">
-                      Budget: ${Number(project.budgetAmount).toLocaleString()}
+                      Budget: ${toNum(project.budgetAmount).toLocaleString()}
                     </p>
                   )}
                 </CardContent>

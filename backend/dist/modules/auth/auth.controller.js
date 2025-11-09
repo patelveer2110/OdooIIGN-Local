@@ -34,7 +34,7 @@ let AuthController = class AuthController {
 };
 exports.AuthController = AuthController;
 __decorate([
-    (0, common_1.Post)("signup"),
+    (0, common_1.Post)("sign-up"),
     (0, swagger_1.ApiOperation)({ summary: "Sign up a new user" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -42,7 +42,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "signUp", null);
 __decorate([
-    (0, common_1.Post)("login"),
+    (0, common_1.Post)("sign-in"),
     (0, swagger_1.ApiOperation)({ summary: "Sign in user" }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),

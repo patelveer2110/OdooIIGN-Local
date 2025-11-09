@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useParams, Link } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { projectsApi } from "@/api/projects"
@@ -10,40 +10,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TaskBoard } from "@/components/TaskBoard"
 import { TimesheetList } from "@/components/TimesheetList"
-
 import { FinancePanel } from "@/components/FinancePanel"
 import { Button } from "@/components/ui/button"
-
-// FinancePanel intentionally not used in ProjectPage tabs
 import { PurchaseOrdersPanel } from "@/components/PurchaseOrdersPanel"
 import { VendorBillsPanel } from "@/components/VendorBillsPanel"
 import { SalesOrderPanel } from "@/components/SalesOrderPanel"
-
+import { ProjectAnalyticsPanel } from "@/components/ProjectAnalyticsPanel"
 import { ArrowLeft } from "lucide-react"
+
+function kFormat(n: number) {
+  if (!isFinite(n)) return "0"
+  return `$${(n / 1000).toFixed(1)}K`
+}
 
 export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const queryClient = useQueryClient()
 
-  // --- Fetch Project ---
+  // --- Fetch Project (includes tasks, timesheets, expenses per your service) ---
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", projectId],
     queryFn: async () => (await projectsApi.getById(projectId!)).data,
   })
 
-  // --- Fetch Financials ---
+  // --- Financials ---
   const { data: financials } = useQuery({
     queryKey: ["project-financials", projectId],
     queryFn: async () => (await projectsApi.getFinancials(projectId!)).data,
   })
 
-  // --- Fetch Users (for assignment dropdown) ---
+  // --- Users (kept because you had them for task creation earlier) ---
   const { data: users = [] } = useQuery({
     queryKey: ["users"],
     queryFn: async () => (await usersApi.getAll()).data,
   })
 
-  // --- UI State ---
+  // --- Create Task (kept intact though UI is hidden in tabs; TaskBoard handles creation for allowed roles) ---
   const [showCreateTask, setShowCreateTask] = useState(false)
   const [newTask, setNewTask] = useState({
     title: "",
@@ -52,7 +54,6 @@ export function ProjectPage() {
     estimateHours: 2,
   })
 
-  // --- Create Task Mutation ---
   const createTaskMutation = useMutation({
     mutationFn: async () => {
       const payload = {
@@ -66,29 +67,45 @@ export function ProjectPage() {
         priority: "MEDIUM",
         state: "NEW",
       }
-
-      console.log("📤 Creating task payload:", payload)
       return await tasksApi.create(projectId!, payload)
     },
-
     onSuccess: (res) => {
       const created = res.data
-      console.log("✅ Task created:", created)
-
-      // Optimistically update Kanban board
       queryClient.setQueryData(["tasks", projectId], (old: any = []) => [created, ...old])
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] })
-
-      // Reset form
       setNewTask({ title: "", description: "", assigneeId: "", estimateHours: 2 })
       setShowCreateTask(false)
     },
-
     onError: (err: any) => {
-      console.error("❌ Task creation failed:", err.response?.data || err.message)
       alert(`Task creation failed: ${err.response?.data?.message || err.message}`)
     },
   })
+
+  // --- Project progress from tasks (total vs done) ---
+  const progress = useMemo(() => {
+    const tasks = (project?.tasks ?? []) as Array<{
+      estimateHours?: number | null
+      state?: string | null
+    }>
+
+    const toNum = (v: any) => {
+      const n = Number(v)
+      return isFinite(n) ? n : 0
+    }
+
+    const totalTaskHours = tasks.reduce((s, t) => s + toNum(t.estimateHours), 0)
+    const completedHours = tasks
+      .filter((t) => (t.state || "").toUpperCase() === "DONE")
+      .reduce((s, t) => s + toNum(t.estimateHours), 0)
+
+    const pct = totalTaskHours > 0 ? Math.min(100, Math.round((completedHours / totalTaskHours) * 100)) : 0
+
+    return {
+      pct,
+      completedHours,
+      totalTaskHours,
+    }
+  }, [project?.tasks])
 
   if (isLoading) return <div>Loading project...</div>
   if (!project) return <div>Project not found</div>
@@ -108,13 +125,23 @@ export function ProjectPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* ✅ Project Progress based on task hours */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Budget Usage</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">Project Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">65%</p>
-            <p className="text-xs text-gray-500">$97.5K of $150K</p>
+            <p className="text-2xl font-bold">{progress.pct}%</p>
+            <p className="text-xs text-gray-500">
+              {progress.completedHours}h of {progress.totalTaskHours}h (DONE tasks)
+            </p>
+            <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="h-2 rounded-full bg-blue-600"
+                style={{ width: `${progress.pct}%` }}
+                aria-label="project progress"
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -123,7 +150,7 @@ export function ProjectPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${(financials?.revenue || 0) / 1000}K</p>
+            <p className="text-2xl font-bold">{kFormat(Number(financials?.revenue || 0))}</p>
           </CardContent>
         </Card>
 
@@ -132,7 +159,7 @@ export function ProjectPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Cost</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">${(financials?.cost || 0) / 1000}K</p>
+            <p className="text-2xl font-bold">{kFormat(Number(financials?.cost || 0))}</p>
           </CardContent>
         </Card>
 
@@ -142,10 +169,10 @@ export function ProjectPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-green-600">
-              ${(financials?.profit || 0) / 1000}K
+              {kFormat(Number(financials?.profit || 0))}
             </p>
             <p className="text-xs text-gray-500">
-              {(financials?.profitMargin || 0).toFixed(1)}% margin
+              {(Number(financials?.profitMargin || 0)).toFixed(1)}% margin
             </p>
           </CardContent>
         </Card>
@@ -159,82 +186,13 @@ export function ProjectPage() {
           <TabsTrigger value="sales-orders">Sales Orders</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
           <TabsTrigger value="docs">Docs</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tasks" className="p-4 space-y-4">
-        {/* --- TASKS TAB ---
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Project Tasks</h2>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => setShowCreateTask((s) => !s)}
-            >
-              {showCreateTask ? "Cancel" : "New Task"}
-            </Button>
-          </div>
-
-          {showCreateTask && (
-            <div className="border rounded bg-gray-50 p-4 space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                <input
-                  className="border rounded px-2 py-1"
-                  placeholder="Task Title"
-                  value={newTask.title}
-                  onChange={(e) =>
-                    setNewTask((t) => ({ ...t, title: e.target.value }))
-                  }
-                />
-                <input
-                  className="border rounded px-2 py-1"
-                  placeholder="Description"
-                  value={newTask.description}
-                  onChange={(e) =>
-                    setNewTask((t) => ({ ...t, description: e.target.value }))
-                  }
-                />
-                <select
-                  className="border rounded px-2 py-1"
-                  value={newTask.assigneeId}
-                  onChange={(e) =>
-                    setNewTask((t) => ({ ...t, assigneeId: e.target.value }))
-                  }
-                >
-                  <option value="">Select Assignee</option>
-                  {users.map((u: any) => (
-                    <option key={u.id} value={u.id}>
-                      {u.fullName || u.name || u.email}{" "}
-                      {u.role ? `(${u.role})` : ""}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  className="border rounded px-2 py-1"
-                  placeholder="Estimate Hours"
-                  value={newTask.estimateHours}
-                  onChange={(e) =>
-                    setNewTask((t) => ({
-                      ...t,
-                      estimateHours: Number(e.target.value),
-                    }))
-                  }
-                />
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => createTaskMutation.mutate()}
-                  disabled={!newTask.title || createTaskMutation.isPending}
-                >
-                  {createTaskMutation.isPending ? "Creating..." : "Create Task"}
-                </Button>
-              </div>
-            </div>
-          )} */}
-
-          {/* ✅ Kanban Board */}
           <TaskBoard projectId={projectId!} teamMembers={project.teamMembers} />
         </TabsContent>
 
-        {/* --- TIMESHEETS TAB --- */}
         <TabsContent value="timesheets" className="p-4">
           <TimesheetList projectId={projectId!} />
         </TabsContent>
@@ -252,12 +210,19 @@ export function ProjectPage() {
           </div>
         </TabsContent>
 
-        {/* --- DOCUMENTS TAB --- */}
         <TabsContent value="docs" className="p-4">
           <div className="space-y-4">
             <h4 className="font-semibold">Vendor Bills</h4>
             <div className="p-2 bg-gray-50 rounded">
               <VendorBillsPanel projectId={projectId!} />
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="analytics" className="p-4">
+          <div className="space-y-4">
+            <h4 className="font-semibold">Analytics</h4>
+            <div className="p-2 bg-gray-50 rounded">
+              <ProjectAnalyticsPanel projectId={projectId!} project={project} />
             </div>
           </div>
         </TabsContent>

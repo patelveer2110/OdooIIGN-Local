@@ -39,9 +39,9 @@ export declare class ProjectsController {
             status: import(".prisma/client").$Enums.TimesheetStatus;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             projectId: string;
             notes: string | null;
-            userId: string;
             taskId: string | null;
             workDate: Date;
             durationHours: import("@prisma/client/runtime/library").Decimal;
@@ -55,10 +55,10 @@ export declare class ProjectsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            userId: string;
             projectId: string;
             currency: string;
             notes: string | null;
-            userId: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             billable: boolean;
             date: Date;
