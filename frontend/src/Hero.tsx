@@ -10,9 +10,12 @@ export default function OneFlowLanding() {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-lg sm:text-xl font-bold">O</span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover"
+            />
+
             <span className="text-xl sm:text-2xl font-bold text-gray-900">OneFlow</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -31,11 +34,12 @@ export default function OneFlowLanding() {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left Content */}
           <div className="text-center lg:text-left">
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6">
+            <h1 className="text-3xl sm:text-5xl lg:text-5.5xl font-bold text-gray-900 leading-tight mb-3 sm:mb-5">
               Plan, Execute & Bill -
               <br />
               <span className="text-blue-600">All in one Place.</span>
             </h1>
+
             <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 max-w-lg mx-auto lg:mx-0">
               Simplify your projects with an integrated workspace that connects tasks, teams, and finances seamlessly.
             </p>
@@ -51,16 +55,15 @@ export default function OneFlowLanding() {
 
           {/* Right Content - Laptop Mockup */}
           <div className="relative mt-8 lg:mt-0">
-            <div className="bg-white rounded-xl shadow-xl p-4 sm:p-6">
-              <div className="aspect-video bg-blue-50 rounded-lg overflow-hidden">
+           
+              
                 <img
                   src="/laptop.png"
                   alt="OneFlow dashboard preview"
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -133,9 +136,11 @@ export default function OneFlowLanding() {
             {/* Company Info */}
             <div className="sm:col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-lg sm:text-xl font-bold">O</span>
-                </div>
+                 <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover"
+            />
                 <span className="text-xl sm:text-2xl font-bold text-white">OneFlow</span>
               </div>
               <p className="text-gray-400 mb-4 sm:mb-6 text-sm sm:text-base">

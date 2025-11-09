@@ -84,9 +84,11 @@ export function LoginPage() {
   <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-10">
     {/* Branding */}
     <div className="flex items-center gap-2 mb-8">
-      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-        <span className="text-white font-bold text-xl">O</span>
-      </div>
+      <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover"
+            />
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">OneFlow</h1>
     </div>
 

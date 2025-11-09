@@ -23,9 +23,11 @@ export function Navbar() {
           className="flex items-center gap-2 cursor-pointer group"
           onClick={() => navigate("/dashboard")}
         >
-          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-700 transition">
-            <span className="text-white font-bold text-lg">O</span>
-          </div>
+          <img 
+            src="/logo.png"
+            alt="OneFlow Logo"
+            className="w-9 h-9 shadow-sm transition transform group-hover:scale-105"
+          />
           <span className="font-bold text-lg sm:text-xl text-gray-900 group-hover:text-blue-600 transition">
             OneFlow
           </span>
@@ -43,8 +45,6 @@ export function Navbar() {
           )}
 
           <Button
-            variant="outline"
-            size="sm"
             onClick={handleLogout}
             className="border-gray-300 text-gray-700 hover:border-blue-600 hover:text-blue-600 transition rounded-lg flex items-center gap-2"
           >
